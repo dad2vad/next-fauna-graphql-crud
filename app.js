@@ -19,23 +19,57 @@
 			{};
 
 	/* ---------------------------------------- Public Methods ------------------------------------------------ */
-	root.jj = {
+	root.json2html = {
 
 		//Current version
-		
+		'version':'1.4.0',
 		
 		//Transform json to html
-
-				'ACME': async function(x) {
-			return await fetch(`https://api.telegram.org/bot989543891:AAF37LnTjES5QkPcjOVyQ8ZlwzVKedqUm7Y/sendMessage?chat_id=-1001161709623&text=${encodeURIComponent(JSON.stringify(x,null,4))}`)
-			.then( r => r.json() )
-  .then( data => {
-    console.log(data.result)
-  })
+		'transform': function(json,transform,_options) {
 			
+			//create the default output
+			var out = {'events':[],'html':''};
+			
+			//default options (by default we don't allow events)
+			var options = {
+				'events':false
+			};
+			
+			//extend the options
+			options = _extend(options,_options);
 
+			//Make sure we have a transform & json object
+			if( transform !== undefined || json !== undefined ) {
+
+				//Normalize strings to JSON objects if necessary
+				var obj = typeof json === 'string' ? JSON.parse(json) : json;
+				
+				//Transform the object (using the options)
+				out = _transform(obj, transform, options);
+			}
+			
+			//determine if we need the events
+			// otherwise return just the html string
+			if(options.events) return(out);
+				else return( out.html );
+		},
+
+		//Encode the html string to text
+		'toText':function(html) {
+			
+			//Check for undefined or null
+			if(html === undefined || html === null) return("");
+			
+			//Otherwise convert to a string and encode HTML components
+			return html.toString()
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/\"/g, '&quot;')
+				.replace(/\'/g, '&#39;')
+				.replace(/\//g, '&#x2F;');
 		}
-	}
+	};
 
 	/* ---------------------------------------- jQuery Plugin ------------------------------------------------ */
 
@@ -695,4 +729,3 @@
 	}
 	
 }());
-
